@@ -1,0 +1,12 @@
+{
+  "name": "pomodoro-timer",
+  "version": "1.0.0",
+  "description": "A calm and aesthetic Zen Pomodoro Timer application",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx http-server -p 3000"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

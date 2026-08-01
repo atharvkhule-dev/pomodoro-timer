@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZenTime — A Calm & Aesthetic Pomodoro Timer</title>
+  <meta name="description" content="A distraction-free, aesthetic Pomodoro timer featuring soothing synthesized ambient sounds and task management to help you stay focused.">
+  <meta name="color-scheme" content="light dark">
+  
+  <!-- Pre-render theme restoration script to prevent flash of light/dark background -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('zen-theme') || 'sage';
+      const savedMode = localStorage.getItem('zen-mode') || 'system';
+      
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      
+      let isDark = false;
+      if (savedMode === 'dark') {
+        isDark = true;
+      } else if (savedMode === 'light') {
+        isDark = false;
+      } else {
+        isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+      
+      if (isDark) {
+        document.documentElement.classList.add('dark-mode');
+      } else {
+        document.documentElement.classList.remove('dark-mode');
+      }
+    })();
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Ambient background elements for beautiful slow morphing glow -->
+  <div class="bg-glow bg-glow-1" aria-hidden="true"></div>
+  <div class="bg-glow bg-glow-2" aria-hidden="true"></div>
+  
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo">
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1.5M12 19.5V21M3.05 12H4.5m15 0H21m-1.45-6.364l-1.06 1.06m-13.06-1.06l1.06 1.06m0 10.608l-1.06 1.06m13.06-1.06l1.06 1.06M12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z" />
+        </svg>
+        <span>ZenTime</span>
+      </div>
+      
+      <!-- Serene dynamic quote placeholder -->
+      <div class="quote-container" id="quote-display">
+        <p class="quote-text">"Quiet the mind and the soul will speak."</p>
+        <span class="quote-author">Ma Jaya Sati Bhagavati</span>
+      </div>
+      
+      <div class="header-controls">
+        <!-- Palette theme picker -->
+        <div class="theme-picker">
+          <button id="theme-selector-btn" class="icon-button" title="Change Visual Theme" aria-label="Change Visual Theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a16.01 16.01 0 01-3.42-3.42" />
+            </svg>
+          </button>
+          <div class="theme-dropdown" id="theme-dropdown">
+            <button class="theme-opt" data-theme-val="sage">
+              <span class="theme-color-preview preview-sage"></span> Sage Garden
+            </button>
+            <button class="theme-opt" data-theme-val="lavender">
+              <span class="theme-color-preview preview-lavender"></span> Nordic Frost
+            </button>
+            <button class="theme-opt" data-theme-val="sand">
+              <span class="theme-color-preview preview-sand"></span> Cozy Sand
+            </button>
+          </div>
+        </div>
+
+        <!-- Light/Dark toggle -->
+        <button id="mode-toggle-btn" class="icon-button" title="Toggle Appearance Mode" aria-label="Toggle Appearance Mode">
+          <svg class="mode-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5" />
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+          </svg>
+          <svg class="mode-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+        </button>
+
+        <!-- Settings Button -->
+        <button id="settings-open-btn" class="icon-button" title="Timer Settings" aria-label="Timer Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <main class="app-main">
+      
+      <!-- Timer Panel -->
+      <section class="timer-section glass-panel">
+        <!-- Mode Tabs -->
+        <div class="timer-tabs">
+          <button id="tab-focus" class="tab-btn active" data-mode="focus">Focus</button>
+          <button id="tab-short" class="tab-btn" data-mode="short">Short Break</button>
+          <button id="tab-long" class="tab-btn" data-mode="long">Long Break</button>
+        </div>
+
+        <!-- Timer Circle Visualizer -->
+        <div class="timer-display-container">
+          <svg class="progress-ring" viewBox="0 0 220 220">
+            <circle class="progress-ring-bg" cx="110" cy="110" r="100" />
+            <circle id="progress-bar" class="progress-ring-fg" cx="110" cy="110" r="100" />
+          </svg>
+          
+          <div class="timer-text-container">
+            <div id="timer-numbers" class="timer-numbers">25:00</div>
+            <div id="timer-state-label" class="timer-label">BREATHE & FOCUS</div>
+          </div>
+        </div>
+
+        <!-- Active Focus Task display -->
+        <div class="active-task-banner" id="active-task-banner">
+          <span class="active-task-dot"></span>
+          <span class="active-task-title" id="active-task-title">No task selected for focus</span>
+        </div>
+
+        <!-- Controls -->
+        <div class="timer-controls">
+          <button id="timer-reset-btn" class="control-btn secondary-btn" title="Reset Timer" aria-label="Reset Timer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+          </button>
+          
+          <button id="timer-play-btn" class="control-btn primary-btn" title="Start Focus" aria-label="Start Focus">
+            <!-- Play Icon -->
+            <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            <!-- Pause Icon (hidden initially) -->
+            <svg class="pause-icon hidden" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+            </svg>
+          </button>
+          
+          <button id="timer-skip-btn" class="control-btn secondary-btn" title="Skip Session" aria-label="Skip Session">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 5v14l8-7zm11 0v14l8-7z" />
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- Sidebar / Panels Container -->
+      <aside class="sidebar-section">
+        
+        <!-- Ambient sound control card -->
+        <section class="glass-panel sound-card">
+          <h2 class="section-title">
+            <svg class="section-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+            </svg>
+            Ambient Soundscapes
+          </h2>
+          
+          <div class="sound-controls-list">
+            <!-- Rain Synthesizer -->
+            <div class="sound-item" id="sound-rain">
+              <div class="sound-info">
+                <button class="sound-toggle-btn" aria-label="Toggle Rain Sounds">
+                  <svg class="icon-mute hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6L4.5 9H1.5v6h3l4.5 3.75V5.25z" />
+                  </svg>
+                  <svg class="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 00.332-7.482 3 3 0 00-.765-5.83 4.5 4.5 0 00-8.661-1.23C7.262 5.08 5.25 7.42 5.25 10.15a4.49 4.49 0 00-3 4.35zM7.5 19.5v-1m3 1v-1m3 1v-1m3 1v-1" />
+                  </svg>
+                </button>
+                <span class="sound-name">Autumn Rain</span>
+              </div>
+              <div class="sound-slider-container">
+                <input type="range" class="sound-volume" min="0" max="100" value="40" aria-label="Autumn Rain Volume">
+              </div>
+            </div>
+
+            <!-- Forest Wind Synthesizer -->
+            <div class="sound-item" id="sound-wind">
+              <div class="sound-info">
+                <button class="sound-toggle-btn" aria-label="Toggle Forest Wind Sounds">
+                  <svg class="icon-mute hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6L4.5 9H1.5v6h3l4.5 3.75V5.25z" />
+                  </svg>
+                  <svg class="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                  </svg>
+                </button>
+                <span class="sound-name">Zen Breeze</span>
+              </div>
+              <div class="sound-slider-container">
+                <input type="range" class="sound-volume" min="0" max="100" value="30" aria-label="Zen Breeze Volume">
+              </div>
+            </div>
+
+            <!-- Brown/Pink Focus Noise -->
+            <div class="sound-item" id="sound-noise">
+              <div class="sound-info">
+                <button class="sound-toggle-btn" aria-label="Toggle Deep Space Noise">
+                  <svg class="icon-mute hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6L4.5 9H1.5v6h3l4.5 3.75V5.25z" />
+                  </svg>
+                  <svg class="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+                  </svg>
+                </button>
+                <span class="sound-name">Deep Focus Noise</span>
+              </div>
+              <div class="sound-slider-container">
+                <input type="range" class="sound-volume" min="0" max="100" value="25" aria-label="Deep Focus Noise Volume">
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Focus Tasks Card -->
+        <section class="glass-panel tasks-card">
+          <div class="panel-header-row">
+            <h2 class="section-title">
+              <svg class="section-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+              Tasks
+            </h2>
+            <div class="task-filters">
+              <button id="filter-all" class="filter-btn active" data-filter="all">All</button>
+              <button id="filter-active" class="filter-btn" data-filter="active">Active</button>
+              <button id="filter-done" class="filter-btn" data-filter="done">Completed</button>
+            </div>
+          </div>
+          
+          <form class="task-form" id="task-input-form">
+            <input type="text" id="new-task-title" placeholder="What are you focusing on?" required max="120" autocomplete="off" aria-label="New task input">
+            <button type="submit" class="task-submit-btn" aria-label="Add Task">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+            </button>
+          </form>
+
+          <ul class="task-list" id="task-list-element">
+            <!-- Rendered dynamically -->
+          </ul>
+        </section>
+
+        <!-- Statistics Card -->
+        <section class="glass-panel stats-card">
+          <h2 class="section-title">
+            <svg class="section-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 111.086.796L10.5 15.75h7.875c.115 0 .222-.053.29-.143l1.875-2.5a.375.375 0 00-.06-.516l-1.875-1.5a.375.375 0 00-.465.03l-1.683 1.347-3.176-3.176a.75.75 0 00-1.06 0L8.7 12.793l-1.92-1.92a.75.75 0 00-1.06 0l-3.5 3.5a.75.75 0 101.06 1.06l2.97-2.97 1.92 1.92a.75.75 0 001.06 0l3.525-3.525z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75v6m3-6v6m3-6v6m3-6v6M3 21h18" />
+            </svg>
+            Daily Progress
+          </h2>
+          
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-value" id="stats-pomodoros">0</span>
+              <span class="stat-label">Focus Sessions</span>
+            </div>
+            
+            <div class="stat-item">
+              <span class="stat-value" id="stats-minutes">0</span>
+              <span class="stat-label">Focus Minutes</span>
+            </div>
+            
+            <div class="stat-item">
+              <span class="stat-value" id="stats-tasks">0</span>
+              <span class="stat-label">Tasks Done</span>
+            </div>
+          </div>
+          
+          <div class="stats-footer">
+            <button id="stats-reset-btn" class="text-link-btn">Reset daily metrics</button>
+          </div>
+        </section>
+
+      </aside>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>ZenTime — Designed for deep, mindful focus.</p>
+    </footer>
+  </div>
+
+  <!-- Timer Settings Modal -->
+  <dialog class="settings-dialog glass-panel" id="settings-dialog">
+    <div class="dialog-header">
+      <h3>Timer Settings</h3>
+      <button id="settings-close-btn-x" class="icon-button close-dialog-btn" aria-label="Close Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    
+    <form id="settings-form" method="dialog">
+      <div class="form-group">
+        <label for="input-focus-duration">Focus Duration (minutes)</label>
+        <input type="number" id="input-focus-duration" min="1" max="180" value="25" required>
+      </div>
+
+      <div class="form-group">
+        <label for="input-short-duration">Short Break Duration (minutes)</label>
+        <input type="number" id="input-short-duration" min="1" max="60" value="5" required>
+      </div>
+
+      <div class="form-group">
+        <label for="input-long-duration">Long Break Duration (minutes)</label>
+        <input type="number" id="input-long-duration" min="1" max="120" value="15" required>
+      </div>
+
+      <div class="form-group-checkbox">
+        <input type="checkbox" id="input-auto-breaks">
+        <label for="input-auto-breaks">Auto-start Breaks</label>
+      </div>
+
+      <div class="form-group-checkbox">
+        <input type="checkbox" id="input-auto-focus">
+        <label for="input-auto-focus">Auto-start Focus Sessions</label>
+      </div>
+      
+      <div class="form-group">
+        <label for="input-sound-volume">Notification Volume</label>
+        <input type="range" id="input-sound-volume" min="0" max="100" value="60">
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" id="settings-reset-defaults" class="text-link-btn">Reset Defaults</button>
+        <button type="submit" class="action-btn-primary">Apply Changes</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Main JavaScript File -->
+  <script src="app.js"></script>
+</body>
+</html>
